@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 // 🔹 Mongo connection
-const MONGO_URL = "mongodb://localhost:27017/testdb";
+const MONGO_URL = "mongodb://mongo:27017/testdb";
 
 mongoose.connect(MONGO_URL)
   .then(() => console.log("Connected to MongoDB"))
