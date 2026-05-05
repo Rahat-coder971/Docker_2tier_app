@@ -2,41 +2,75 @@ const express = require("express");
 const mongoose = require("mongoose");
 
 const app = express();
+
+// 🔹 Middleware (to read JSON body)
 app.use(express.json());
 
 // 🔹 Mongo connection
 const MONGO_URL = "mongodb://mongo:27017/testdb";
 
-mongoose.connect(MONGO_URL)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch(err => console.log("Mongo Error:", err));
+// 🔁 Retry connection (important in Docker)
+const connectDB = async () => {
+  try {
+    await mongoose.connect(MONGO_URL);
+    console.log("✅ Connected to MongoDB");
+  } catch (err) {
+    console.log("❌ Mongo connection failed, retrying...");
+    setTimeout(connectDB, 3000);
+  }
+};
+
+connectDB();
 
 // 🔹 Schema
 const userSchema = new mongoose.Schema({
-  name: String
+  name: {
+    type: String,
+    required: true
+  }
 });
 
+// 🔹 Model
 const User = mongoose.model("User", userSchema);
 
-// 🔴 Route 1: Add data
-app.get("/add", async (req, res) => {
-  const user = new User({ name: "Rahat" });
-  await user.save();
-  res.send("User added to DB");
+// 🔴 POST: Add user (from body)
+app.post("/add", async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    // validation
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+
+    const user = new User({ name });
+    await user.save();
+
+    res.status(201).json({
+      message: "User saved successfully",
+      user
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// 🔴 Route 2: Get data
+// 🔴 GET: Fetch all users
 app.get("/users", async (req, res) => {
-  const users = await User.find();
-  res.json(users);
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // 🔴 Root route
 app.get("/", (req, res) => {
-  res.send("🚀 App is running!");
+  res.send("🚀 App is running and connected to MongoDB!");
 });
 
 // 🔹 Start server
 app.listen(5000, "0.0.0.0", () => {
-  console.log("Server running on port 5000");
+  console.log("🚀 Server running on port 5000");
 });
