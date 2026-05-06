@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfile
+
+    container_name: backend
+
+    ports:
+      - "5000:5000"
+
+    networks:
+      - my-nets
+    depends_on:
+      - mongo  
+
+  mongo:
+    image: mongo:latest
+
+    container_name: mongo
+
+    ports:
+      - "27017:27017"
+
+    networks:
+      - my-nets    
+
+networks:
+  my-nets:
+
