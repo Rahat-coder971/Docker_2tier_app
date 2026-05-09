@@ -67,7 +67,7 @@ app.get("/users", async (req, res) => {
 
 // 🔴 Root route
 app.get("/", (req, res) => {
-  res.send("🚀 App is running and connected to MongoDB!");
+  res.send("🚀 App is running and connected to MongoDB! and is updated");
 });
 
 // 🔹 Start server
