@@ -1,0 +1,44 @@
+pipeline{
+    agent any;
+    stages{
+        stage("pull code"){
+           steps{
+                git url:"https://github.com/Rahat-coder971/Docker_2tier_app",
+                  branch:'master'
+           }
+        }
+        stage('build'){
+            steps{
+                bat "docker build -t rahathusain22/imgs:latest ."
+            }
+        }
+        stage("test code"){
+            steps{
+                echo "testing is done"
+            }
+        }
+        stage("login to docker hub and push img"){
+            steps{
+                withCredentials([usernamePassword(
+                    credentialsId:"dockerHubId",
+                    usernameVariable:'username',
+                    passwordVariable:'userpass'
+                    )]){
+                    bat 'docker login -u %username% -p %userpass%'
+                    bat 'docker push %username%/imgs:latest'
+                }
+            }
+        }
+        stage("pull latest img"){
+            steps{
+                bat 'docker compose -f docker_comps.yml pull'
+            }
+        }
+        stage("run and deploy"){
+            steps{
+                bat 'docker compose -f docker_comps.yml down '
+                bat 'docker compose -f docker_comps.yml up -d'
+            }
+        }
+    }
+}
