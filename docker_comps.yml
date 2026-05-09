@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile
-
+    image: rahathusain22/imgs:latest
     container_name: backend
 
     ports:
